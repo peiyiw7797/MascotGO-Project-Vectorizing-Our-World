@@ -85,6 +85,7 @@ depend on wall-clock time.
 | `step` | int | yes | Copied from event. |
 | `text_ref` | string | yes | Reference into text modality. |
 | `image_ref` | string | yes | Reference into image modality. |
+| `audio_ref` | string | yes | Reference into audio modality. |
 | `tabular_ref` | string | yes | Reference into tabular modality. |
 
 ### `text/samples.jsonl`
@@ -110,6 +111,15 @@ Each line is a JSON object with:
 | `item_id` | string | yes | Item depicted. |
 | `image_type` | string | yes | Placeholder or type label. |
 | `path` | string | yes | Relative path to image asset. |
+
+### `audio/voice_note_index.csv`
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `audio_id` | string | yes | Audio artifact identifier. |
+| `sample_id` | string | yes | Links to `multimodal_samples`. |
+| `transcript_ref` | string | yes | Reference to text transcript. |
+| `duration_sec` | int | no | Optional duration in seconds. |
 
 ### `tabular_features.parquet`
 

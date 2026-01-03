@@ -13,7 +13,7 @@ Work in Phase 1 is split into issue-owned modules. Each module has a clear bound
 | Division (Issue) | Folder | What it owns | Skills and tools needed |
 | --- | --- | --- | --- |
 | Persona and Agent Design (Issue #1) + Behavior Simulation (Issue #3) | `src/universal_embedding/simulation/` | Persona schemas, population generation, behavior rules, temporal dynamics, event outputs | Schema design, probabilistic modeling, deterministic simulation, config-driven pipelines |
-| Multimodal Synthetic Data (Issue #2) | `src/universal_embedding/synthetic_data/` | Cross-modal dataset building from simulation outputs | Data orchestration, multimodal alignment, deterministic artifact generation |
+| Multimodal Synthetic Data (Issue #2) | `src/universal_embedding/synthetic_data/` | Multimodal profile generation (text/image/audio surrogates) from simulation outputs | Data orchestration, multimodal alignment, deterministic artifact generation |
 | Real College Data Ingestion and Alignment (Issue #4) | `src/universal_embedding/data_ingestion/` | Loading external college data and aligning synthetic items to real institutions | ETL and normalization, schema mapping, ID alignment, reproducibility |
 
 ## Sub-workflow inputs and outputs
@@ -23,7 +23,7 @@ Each sub-workflow is a contract. Inputs are treated as immutable, and outputs ar
 | Sub-workflow | Inputs | Outputs |
 | --- | --- | --- |
 | Simulation | `configs/*.yaml`, schema definitions, seed | `data/synthetic/<run_id>/` with `users.parquet`, `items.parquet`, `events.parquet`, `sessions.parquet`, `metadata.json` |
-| Multimodal synthetic data | `data/synthetic/<run_id>/` tables | `data/multimodal/<run_id>/` with `multimodal_samples.parquet`, `text/`, `images/`, `metadata.json` |
+| Multimodal synthetic data | `data/synthetic/<run_id>/` tables | `data/multimodal/<run_id>/` with `multimodal_samples.parquet`, `text/`, `images/`, `audio/`, `tabular_features.parquet`, `metadata.json` |
 | Data ingestion and alignment | `data/external/` raw datasets, `data/synthetic/<run_id>/items.parquet` | `data/processed/colleges/` with `colleges.parquet`, `college_attributes.parquet`, `alignment.(parquet|json)`, `metadata.json` |
 
 ## Phase 1 outputs
