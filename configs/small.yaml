@@ -93,23 +93,122 @@ behavior:
 multimodal:
   enabled: true
 
-  sample_policy:
-    per_event: true
-    max_samples_per_event: 1
+  # Where Issue #2 writes outputs (must match run_id)
+  output:
+    root: data/multimodal
+    overwrite: false
 
+  # Controls what becomes a "sample" for multimodal learning
+  sample_policy:
+    mode: per_event           # per_event | per_session
+    max_samples_per_event: 1
+    include_event_types: [view, click, apply, purchase]
+    drop_event_types: []
+    attach_session_context: true   # adds session_id, within_session_rank when available
+
+  # ----------------------------
+  # LLM-powered content generation (OFFLINE, CACHED)
+  # ----------------------------
+  llm:
+    enabled: true
+    provider: mock            # mock | openai | local
+    model: gpt-4.1-mini       # example; provider validates
+    temperature: 0.7
+    max_tokens: 800
+
+    # Determinism controls
+    use_cache: true
+    cache_dir: data/cache/llm
+    cache_key_fields: [prompt, schema, seed, model, temperature]
+    fail_if_cache_miss: false     # set true for CI/repro runs
+
+    # Prompts/templates live in repo so changes are tracked
+    prompts_dir: src/universal_embedding/synthetic_data/prompts
+
+  # ----------------------------
+  # Text modalities
+  # ----------------------------
   text:
     enabled: true
-    style: descriptive
-    templates: basic
+    mode: llm                 # llm | template | hybrid
     language: en
+    styles: [descriptive, journal, poetry]   # what to generate
+    max_text_per_sample: 2                  # e.g., journal + caption
+    schema_version: v1
 
+    # If template/hybrid, choose templates
+    templates:
+      preset: basic
+      include_fields: [persona_hint, item_category, item_prestige, exposure_source, position]
+
+  # ----------------------------
+  # Image modality (references only in Phase 1)
+  # ----------------------------
   images:
     enabled: true
-    mode: placeholder        # placeholder | symbolic | none
+    mode: placeholder          # placeholder | symbolic | none
+    placeholder_source: item_id  # item_id | category | random_seeded
+    output_subdir: images
+    include_caption: true      # if true, generate caption via text generator
+    schema_version: v1
 
+  # ----------------------------
+  # Audio modality (voice notes as text surrogates in Phase 1)
+  # ----------------------------
+  audio:
+    enabled: true
+    mode: transcript_only      # transcript_only | none
+    transcript_source: llm     # llm | template
+    duration_sec:
+      distribution: lognormal
+      mean: 12
+      sigma: 0.4
+    output_subdir: audio
+    schema_version: v1
+
+  # ----------------------------
+  # Peer / social context (lightweight in Phase 1)
+  # ----------------------------
+  social:
+    enabled: true
+    mode: derived              # derived | none
+    max_peers_per_user: 20
+    edge_sources: [same_persona, similar_interests]
+    output_file: peer_edges.parquet
+    schema_version: v1
+
+  # ----------------------------
+  # Tabular view (structured representation, not final ML features)
+  # ----------------------------
   tabular:
     enabled: true
     include_context: true
+    include_user_attributes: [budget, ability, persona_type]
+    include_item_attributes: [prestige, cost, category]
+    include_event_fields: [event_type, position, exposure_source]
+    output_file: tabular_features.parquet
+    schema_version: v1
+
+  # ----------------------------
+  # Output spine (alignment contract)
+  # ----------------------------
+  outputs:
+    samples_file: multimodal_samples.parquet
+    text_file: text/samples.jsonl
+    image_index: images/image_index.csv
+    audio_index: audio/voice_note_index.csv
+    metadata_file: metadata.json
+
+  # ----------------------------
+  # Validation: alignment invariants
+  # ----------------------------
+  validation:
+    require_sessions: true
+    enforce_one_sample_per_event: true
+    require_sample_id_unique: true
+    require_event_id_exists: true
+    require_user_item_consistency: true
+
 
 # ------------------------------------------------------------
 # Real College Data Ingestion & Alignment (Issue #4)
