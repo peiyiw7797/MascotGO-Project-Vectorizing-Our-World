@@ -1,4 +1,133 @@
-# Fast dev run
-seed: 42
-persona_count: 100
-session_range: [2, 8]
+# ============================================================
+# Phase 1 Configuration
+# ============================================================
+
+# ------------------------------------------------------------
+# Global
+# ------------------------------------------------------------
+run:
+  run_id: null              # if null, auto-generate
+  seed: 42                  # global seed (MANDATORY)
+  deterministic: true       # must be true in Phase 1
+
+paths:
+  synthetic_root: data/synthetic
+  multimodal_root: data/multimodal
+  external_data_root: data/external
+  processed_root: data/processed
+
+# ------------------------------------------------------------
+# Population & Personas (Issue #1)
+# ------------------------------------------------------------
+population:
+  users:
+    num_users: 1000
+
+    persona_distribution:
+      ambitious: 0.4
+      cautious: 0.35
+      exploratory: 0.25
+
+    attributes:
+      budget:
+        distribution: beta
+        alpha: 2.0
+        beta: 5.0
+
+      ability:
+        distribution: normal
+        mean: 0.6
+        std: 0.15
+
+  items:
+    num_items: 200
+
+    attributes:
+      prestige:
+        distribution: normal
+        mean: 0.5
+        std: 0.2
+
+      cost:
+        distribution: uniform
+        min: 0.1
+        max: 0.9
+
+      category:
+        values: [research, teaching, balanced]
+        probabilities: [0.4, 0.3, 0.3]
+
+# ------------------------------------------------------------
+# Behavior & Interaction Simulation (Issue #3)
+# ------------------------------------------------------------
+behavior:
+  timeline:
+    num_steps: 10000
+    step_unit: interaction
+
+  exposure:
+    max_items_per_step: 10
+    ranking_noise: 0.05
+
+  action_probabilities:
+    view: 1.0
+    click:
+      base: 0.3
+      modifiers:
+        prestige: 0.4
+        position: -0.2
+    apply:
+      base: 0.05
+      persona_boost:
+        ambitious: 1.8
+        cautious: 0.7
+
+  sessions:
+    enabled: true
+    max_session_length: 20
+    session_gap_steps: 50
+
+# ------------------------------------------------------------
+# Multimodal Synthetic Data Generation (Issue #2)
+# ------------------------------------------------------------
+multimodal:
+  enabled: true
+
+  sample_policy:
+    per_event: true
+    max_samples_per_event: 1
+
+  text:
+    enabled: true
+    style: descriptive
+    templates: basic
+    language: en
+
+  images:
+    enabled: true
+    mode: placeholder        # placeholder | symbolic | none
+
+  tabular:
+    enabled: true
+    include_context: true
+
+# ------------------------------------------------------------
+# Real College Data Ingestion & Alignment (Issue #4)
+# ------------------------------------------------------------
+college_alignment:
+  enabled: true
+
+  sources:
+    scorecard:
+      path: college_scorecard.csv
+      version: "2023"
+    rankings:
+      path: rankings.csv
+      version: "qs_2024"
+
+  matching:
+    strategy: hybrid         # exact | fuzzy | hybrid
+    fuzzy_threshold: 0.8
+
+  handling:
+    unmatched_policy: keep   # keep | drop | flag

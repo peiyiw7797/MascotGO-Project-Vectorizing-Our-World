@@ -22,7 +22,7 @@ Each sub-workflow is a contract. Inputs are treated as immutable, and outputs ar
 
 | Sub-workflow | Inputs | Outputs |
 | --- | --- | --- |
-| Simulation | `configs/*.yaml`, schema definitions, seed | `data/synthetic/<run_id>/` with `users.parquet`, `items.parquet`, `events.parquet`, optional `sessions.parquet`, `metadata.json` |
+| Simulation | `configs/*.yaml`, schema definitions, seed | `data/synthetic/<run_id>/` with `users.parquet`, `items.parquet`, `events.parquet`, `sessions.parquet`, `metadata.json` |
 | Multimodal synthetic data | `data/synthetic/<run_id>/` tables | `data/multimodal/<run_id>/` with `multimodal_samples.parquet`, `text/`, `images/`, `metadata.json` |
 | Data ingestion and alignment | `data/external/` raw datasets, `data/synthetic/<run_id>/items.parquet` | `data/processed/colleges/` with `colleges.parquet`, `college_attributes.parquet`, `alignment.(parquet|json)`, `metadata.json` |
 

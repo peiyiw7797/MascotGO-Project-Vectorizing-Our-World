@@ -49,7 +49,7 @@ simulation/
 └─ outputs.py        # standardized outputs
 ```
 
-### Ownership map (VERY IMPORTANT)
+### Ownership map
 
 | File            | Owned by                          | Related Issue |
 | --------------- | --------------------------------- | ------------- |
@@ -82,8 +82,8 @@ This work is mostly **static**:
 
 **Primary files:**
 
-* `schemas.py`
-* `population.py`
+* `schemas.py` defines what a persona must contain (fields, types, constraints)
+* `population.py` instantiates many agents/users/items
 
 **Produces:**
 
@@ -165,11 +165,12 @@ This work is **dynamic and stochastic**:
 ### Outputs
 
 * `events.parquet`
-* optional: `sessions.parquet`
+* `sessions.parquet`
 
 Each event **must include**:
 
 * `event_id`
+* `session_id`
 * `user_id`
 * `item_id`
 * timestamp or step index

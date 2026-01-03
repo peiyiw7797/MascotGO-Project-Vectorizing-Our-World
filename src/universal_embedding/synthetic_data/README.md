@@ -1,4 +1,3 @@
-
 # Multimodal Synthetic Data Generation (Issue #2)
 
 **Phase:** 1 — Simulation & Synthetic Data
@@ -8,27 +7,34 @@
 
 ## 1. What this issue is about (TL;DR)
 
-This module turns **synthetic interactions** into **aligned multimodal training data**.
+This module turns **synthetic interactions and personas** into **aligned multimodal profiles** suitable for downstream embedding learning.
 
 It answers one core question:
 
-> **Given simulated users, items, and events, how do we generate consistent multimodal representations that can be learned by embedding models?**
+> **Given simulated users, items, events, and sessions, how do we generate rich, consistent multimodal representations that embedding models can learn from?**
 
 This issue is the **bridge** between:
 
-* Phase 1 simulation (who exists, what happens)
-* Phase 2 embedding learning (how models consume data)
+* **Phase 1 simulation** — who exists, what happens
+* **Phase 2 embedding learning** — how models consume multimodal data
 
 ---
 
 ## 2. High-level goal
 
-Generate **aligned multimodal synthetic data**—text, image references, tabular features, and metadata—such that:
+Generate **complete multimodal synthetic profiles**—text, image references, audio/text surrogates, structured metadata, and relational context—such that:
 
-* All modalities refer to the **same underlying event**
+* All modalities are **grounded in the same underlying events**
 * IDs are **globally consistent**
 * Temporal ordering is preserved
-* Downstream embedding models can consume the data **without special casing**
+* LLM-generated content is **schema-constrained and reproducible**
+* Downstream embedding models can consume data **without special casing**
+
+This module operationalizes the vision of:
+
+> *“LLM-powered agents creating complete multimodal profiles”*
+
+— while keeping behavior simulation deterministic and scalable.
 
 ---
 
@@ -36,19 +42,76 @@ Generate **aligned multimodal synthetic data**—text, image references, tabular
 
 This module is responsible for:
 
-* Reading synthetic tables from simulation:
+### 3.1 Reading simulation outputs (read-only)
 
-  * users
-  * items
-  * events
-  *  sessions
-* Generating modality-specific artifacts:
+From `data/synthetic/<run_id>/`:
 
-  * text (e.g. descriptions, narratives)
-  * image references (paths or placeholders)
-  * structured metadata
-* Producing **cross-modal aligned samples**
-* Ensuring deterministic generation given a fixed seed
+* `users.parquet`
+* `items.parquet`
+* `events.parquet`
+* `sessions.parquet`
+
+These tables define **ground truth structure**:
+
+* who the user is
+* what item exists
+* what interaction occurred
+* when and in what session context
+
+---
+
+### 3.2 Generating modality-specific artifacts (LLM + programmatic)
+
+From those anchors, this module generates **multimodal views of the same underlying reality**, including:
+
+#### Expressive / semantic modalities (LLM-powered, offline)
+
+* Interests and self-descriptions
+* Journal entries
+* Poetry or creative writing
+* Voice-note *transcripts* (text form)
+* Descriptive captions for photos
+* Persona-consistent narratives of interactions
+
+#### Structural / behavioral modalities (programmatic)
+
+* Clickstream-aligned samples
+* Session-aware context
+* Tabular attributes derived from users/items/events
+* Peer or cohort references (IDs only, no graph learning)
+
+LLMs are used **only as generators**, never as live agents.
+
+---
+
+### 3.3 Producing cross-modal aligned samples
+
+For each eligible event (or session):
+
+* Create a `sample_id`
+* Attach one or more modality artifacts
+* Ensure all modalities reference the same:
+
+  * `sample_id`
+  * `event_id`
+  * `user_id`
+  * `item_id`
+  * timestamp / step
+
+The result is a **joinable, modality-agnostic dataset**.
+
+---
+
+### 3.4 Ensuring determinism
+
+Even when LLMs are used:
+
+* All generation is:
+
+  * schema-constrained
+  * seed-controlled
+  * cached
+* Re-running with the same inputs, config, and seed produces **identical outputs**
 
 ---
 
@@ -58,12 +121,13 @@ This module explicitly does **NOT**:
 
 * ❌ Simulate user behavior
 * ❌ Modify personas, agents, or events
-* ❌ Train models
-* ❌ Evaluate embeddings
+* ❌ Create or alter clickstream logic
+* ❌ Train or evaluate models
 * ❌ Perform realism evaluation
-* ❌ Create train/val/test splits for modeling
+* ❌ Create ML train/val/test splits
 
-Those concerns belong to **other issues or later phases**.
+> **Simulation decides what happened.
+> This module decides how that event is observed across modalities.**
 
 ---
 
@@ -78,7 +142,7 @@ synthetic_data/
 └─ splits.py              # grouping only (no ML splits)
 ```
 
-> This issue owns **all files in this folder**.
+This issue owns **all files in this folder**.
 
 ---
 
@@ -86,29 +150,40 @@ synthetic_data/
 
 All inputs are **read-only**.
 
-| Input file                    | Source                     |
-| ----------------------------- | -------------------------- |
-| `users.parquet`               | `data/synthetic/<run_id>/` |
-| `items.parquet`               | `data/synthetic/<run_id>/` |
-| `events.parquet`              | `data/synthetic/<run_id>/` |
-| `sessions.parquet`            | `data/synthetic/<run_id>/` |
+| Input file         | Source                     |
+| ------------------ | -------------------------- |
+| `users.parquet`    | `data/synthetic/<run_id>/` |
+| `items.parquet`    | `data/synthetic/<run_id>/` |
+| `events.parquet`   | `data/synthetic/<run_id>/` |
+| `sessions.parquet` | `data/synthetic/<run_id>/` |
 
-**Assumptions:**
+**Assumptions**
 
 * IDs are stable and globally unique
 * Schemas are defined by the simulation module
-* Temporal ordering already exists in events
+* Temporal ordering already exists
+* `sessions.parquet` aligns to `events.parquet` via `session_id`
 
 ---
 
-## 7. Outputs 
+## 7. Outputs
 
-### Primary output
-Output location
+### 7.1 Output location
 
-This module writes all artifacts to `data/multimodal/<run_id>/`, where `<run_id>` matches the upstream synthetic simulation run. Simulation outputs under `data/synthetic/` are treated as immutable inputs and must not be modified.
+All outputs are written to:
 
-Example:
+```
+data/multimodal/<run_id>/
+```
+
+Simulation outputs under `data/synthetic/` are treated as **immutable inputs**.
+
+---
+
+### 7.2 Primary outputs
+
+Example structure:
+
 ```
 data/multimodal/<run_id>/
 ├─ multimodal_samples.parquet
@@ -116,203 +191,181 @@ data/multimodal/<run_id>/
 │  └─ samples.jsonl
 ├─ images/
 │  └─ image_index.csv
+├─ audio/
+│  └─ voice_note_index.csv
+├─ tabular_features.parquet
 └─ metadata.json
 ```
 
 ---
 
-## 7. End-to-End Example: One Event → All Modalities
+## 8. End-to-End Example: One Event → Complete Multimodal Profile
 
-This section shows how **a single simulated event** is transformed into **aligned multimodal outputs**.
+### 8.1 Source event (simulation)
 
-The goal is to make it easy to answer:
-
-> “Given *this* event, what exactly gets generated, and where does it live?”
-
----
-
-### 7.1 The source event (from simulation)
-
-Assume the following row exists in `events.parquet`:
+From `events.parquet`:
 
 | event_id | user_id | item_id | step | event_type | position | exposure_source |
 | -------- | ------- | ------- | ---- | ---------- | -------- | --------------- |
 | e_01023  | u_004   | i_012   | 134  | view       | 1        | home_feed       |
 
-**Interpretation (plain English):**
+---
 
-> User `u_004` viewed item `i_012` at time step 134, shown in position 1 on the home feed.
+### 8.2 Multimodal sample spine
 
-This single row is the **ground truth anchor** for everything below.
+`multimodal_samples.parquet`
+
+| sample_id | event_id | user_id | item_id | step | text_ref  | image_ref | audio_ref | tabular_ref |
+| --------- | -------- | ------- | ------- | ---- | --------- | --------- | --------- | ----------- |
+| s_00001   | e_01023  | u_004   | i_012   | 134  | txt_00001 | img_00001 | aud_00001 | tab_00001   |
+
+**Rule:** `sample_id` is the cross-modal join key.
 
 ---
 
-### 7.2 Multimodal sample record
+### 8.3 Text modality (LLM-generated, grounded)
 
-From this event, the dataset builder creates **one multimodal sample**:
-
-#### `multimodal_samples.parquet`
-
-| sample_id | event_id | user_id | item_id | step | text_ref  | image_ref | tabular_ref |
-| --------- | -------- | ------- | ------- | ---- | --------- | --------- | ----------- |
-| s_00001   | e_01023  | u_004   | i_012   | 134  | txt_00001 | img_00001 | tab_00001   |
-
-Key rule:
-
-* `sample_id` is the **cross-modal join key**
-* All modalities below reference `sample_id = s_00001`
-
----
-
-### 7.3 Text modality (natural-language view)
-
-#### `text/samples.jsonl`
+`text/samples.jsonl`
 
 ```json
 {
   "text_id": "txt_00001",
   "sample_id": "s_00001",
   "event_id": "e_01023",
-  "content": "The student browsed a highly ranked research-focused college that appeared first in their recommendations.",
+  "content": "I paused on this college because it felt like the kind of place where ambitious students actually thrive—strong research culture, serious expectations.",
   "persona_hint": "ambitious",
-  "style": "descriptive",
+  "style": "journal",
   "language": "en"
 }
 ```
 
-What this represents:
+This may represent:
 
-* A **textual rendering** of the event
-* Deterministic, template-driven
-* Grounded in:
-
-  * event type (`view`)
-  * item attributes (prestige, category)
-  * context (`position = 1`, `home_feed`)
+* a journal entry
+* a reflection
+* a narrative caption
+* or creative writing (e.g. poetry)
 
 ---
 
-### 7.4 Image modality (visual reference)
+### 8.4 Image modality (reference / placeholder)
 
-#### `images/image_index.csv`
+`images/image_index.csv`
 
 | image_id  | sample_id | item_id | image_type         | path                  |
 | --------- | --------- | ------- | ------------------ | --------------------- |
 | img_00001 | s_00001   | i_012   | campus_placeholder | images/campus_012.png |
 
-What this represents:
+---
 
-* A **visual stand-in** for the item being viewed
-* No requirement for real image generation in Phase 1
-* Used to test multimodal alignment and pipelines
+### 8.5 Voice-note modality (text surrogate)
+
+`audio/voice_note_index.csv`
+
+| audio_id  | sample_id | transcript_ref | duration_sec |
+| --------- | --------- | -------------- | ------------ |
+| aud_00001 | s_00001   | txt_00001      | 18           |
+
+Phase 1 stores **textual surrogates** for audio.
 
 ---
 
-### 7.5 Tabular modality (structured view)
+### 8.6 Tabular modality
 
-#### `tabular_features.parquet`
+`tabular_features.parquet`
 
 | tabular_id | sample_id | user_budget | item_cost | item_prestige | exposure_position |
 | ---------- | --------- | ----------- | --------- | ------------- | ----------------- |
 | tab_00001  | s_00001   | 0.35        | 0.78      | 0.91          | 1                 |
 
-What this represents:
-
-* Structured, numeric representation of the same event
-* Directly derived from:
-
-  * `users.parquet`
-  * `items.parquet`
-  * event context
-
-Important:
-
-* These are **modal representations**, not final ML features
-* Feature transformations happen in Phase 2
-
 ---
 
-### 7.6 Session-aware view
+### 8.7 Session context
 
-Given `sessions.parquet` and this event belongs to a session:
-
-#### `sessions.parquet`
+From `sessions.parquet`:
 
 | session_id | user_id | start_step | end_step |
 | ---------- | ------- | ---------- | -------- |
-| s_0012     | u_004   | 130        | 142      |
+| sess_0012  | u_004   | 130        | 142      |
 
-#### Session linkage (implicit or explicit)
+Implicit linkage:
 
 | sample_id | session_id | within_session_rank |
 | --------- | ---------- | ------------------- |
-| s_00001   | s_0012     | 2                   |
+| s_00001   | sess_0012  | 2                   |
 
 ---
 
-### 7.7 Invariant alignment rules 
+## 9. LLM usage in this module (important)
 
-For **every event → sample → modality mapping**, the following must hold:
+LLMs are **explicitly supported** here, but only as **offline generators**.
 
-* [ ] `event_id` exists in `events.parquet`
-* [ ] `sample_id` uniquely maps to exactly one event
-* [ ] All modalities reference the same `sample_id`
-* [ ] `user_id` and `item_id` are consistent everywhere
-* [ ] Re-running with the same seed reproduces identical artifacts
+**LLMs MAY be used for:**
 
-If any invariant breaks, **multimodal learning becomes undefined**.
+* Interests and self-descriptions
+* Journal entries
+* Poetry or creative text
+* Voice-note transcripts
+* Persona-consistent narratives
 
+**LLMs MUST NOT be used for:**
 
+* Simulating behavior
+* Creating or modifying events
+* Introducing uncached randomness
+* Acting as live agents
+
+Once generated, all LLM outputs are **cached, validated, and frozen**.
 
 ---
 
-## 8. Determinism requirements
+## 10. Determinism requirements
 
 This module **must be deterministic**.
 
-> Same inputs + same config + same seed → identical multimodal outputs
+Same inputs + same config + same seed → identical outputs.
 
 Rules:
 
-* All randomness must be seed-controlled
-* No implicit randomness in text or image generation
+* All randomness is seed-controlled
+* LLM outputs are cached by prompt + schema + seed
 * No dependence on wall-clock time
 
 ---
 
-## 9. Dependency boundaries
+## 11. Dependency boundaries
 
-### Upstream dependencies
+### Upstream
 
 * Simulation outputs (Issues #1 and #3)
-* Configuration files (`configs/*.yaml`)
+* Config files (`configs/*.yaml`)
 
-### Downstream consumers
+### Downstream
 
 * Phase 2 embedding training pipelines
 * `evaluation.distribution`
 
-Downstream code **assumes this module is stable**.
+Downstream code assumes this module is **stable and schema-consistent**.
 
 ---
 
-## 10. Definition of Done (DoD)
+## 12. Definition of Done (DoD)
 
 This issue is complete when:
 
-* [ ] Multimodal schemas are clearly defined and documented
-* [ ] Cross-modal alignment is verified (IDs, timestamps)
-* [ ] A small config run produces **all modalities successfully**
-* [ ] Deterministic generation is confirmed
-* [ ] No simulation logic is duplicated here
+* [ ] Multimodal schemas are documented
+* [ ] LLM-generated content is grounded and reproducible
+* [ ] Cross-modal alignment invariants hold
+* [ ] Small config run produces full profiles
+* [ ] No simulation logic is duplicated
 * [ ] PR merged with review
 
 ---
 
-## 11. Mental model (important)
+## 13. Mental model (remember this)
 
 > **Simulation tells us what happened.
-> Multimodal generation tells us how that event is observed across modalities.**
+> Multimodal generation tells us how that experience is expressed.**
 
 If you feel tempted to:
 
@@ -320,14 +373,18 @@ If you feel tempted to:
 * add new events
 * “fix” distributions
 
-You are probably in the **wrong module**.
+You are probably in the wrong module.
 
 ---
 
-## 12. How to work safely in this issue
+## 14. How to work safely in this issue
 
 * Treat simulation outputs as immutable
-* Prefer additive changes over refactors
-* Document schemas before changing them
-* Keep PRs small and reviewable
-* Ask before introducing new modalities
+* Prefer additive changes
+* Document schemas before extending
+* Keep PRs small
+* Ask before adding new modalities
+
+---
+
+This module is where **synthetic humans become multimodal**—without sacrificing rigor, determinism, or scale.
