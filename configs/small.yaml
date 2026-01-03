@@ -1,0 +1,4 @@
+# Fast dev run
+seed: 42
+persona_count: 100
+session_range: [2, 8]

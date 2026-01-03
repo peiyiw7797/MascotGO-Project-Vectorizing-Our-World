@@ -1,0 +1,9 @@
+project:
+  name: universal-embedding
+  phase: phase1
+
+paths:
+  data_root: data
+  raw: data/raw
+  synthetic: data/synthetic
+  interim: data/interim

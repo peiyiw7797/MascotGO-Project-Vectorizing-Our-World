@@ -1,0 +1,8 @@
+[project]
+name = "universal-embedding"
+version = "0.1.0"
+description = "Synthetic-first simulation and dataset builder"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

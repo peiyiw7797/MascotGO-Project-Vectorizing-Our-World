@@ -1,0 +1,4 @@
+# Full run
+seed: 42
+persona_count: 10000
+session_range: [3, 25]
