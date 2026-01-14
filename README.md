@@ -50,7 +50,3 @@ Phase 1 outputs are the direct inputs to Phase 2. Phase 2 uses these artifacts t
 python -m universal_embedding.pipelines.run_simulation --config configs/small.yaml
 python -m universal_embedding.pipelines.build_dataset --config configs/small.yaml
 ```
-
-## Contributing
-
-See `docs/phase1/` for specs and `docs/phase1/decisions.md` for trade-offs.
