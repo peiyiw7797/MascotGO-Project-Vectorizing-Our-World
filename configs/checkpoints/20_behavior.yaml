@@ -1,0 +1,29 @@
+# ------------------------------------------------------------
+# Behavior & Interaction Simulation (Issue #3)
+# ------------------------------------------------------------
+behavior:
+  timeline:
+    num_steps: 10000
+    step_unit: interaction
+
+  exposure:
+    max_items_per_step: 10
+    ranking_noise: 0.05
+
+  action_probabilities:
+    view: 1.0
+    click:
+      base: 0.3
+      modifiers:
+        prestige: 0.4
+        position: -0.2
+    apply:
+      base: 0.05
+      persona_boost:
+        ambitious: 1.8
+        cautious: 0.7
+
+  sessions:
+    enabled: true
+    max_session_length: 20
+    session_gap_steps: 50

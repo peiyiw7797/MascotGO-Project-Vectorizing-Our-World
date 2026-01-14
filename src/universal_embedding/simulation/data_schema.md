@@ -1,0 +1,1 @@
+Generate your output schema here (you can refer to docs/phase1/data_schema.md for help) 

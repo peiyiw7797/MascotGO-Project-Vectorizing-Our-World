@@ -1,0 +1,41 @@
+# ------------------------------------------------------------
+# Population & Personas (Issue #1)
+# This is just an example to give you an idea of the config structure. Feel free to edit and add more as you progress!
+# ------------------------------------------------------------
+population:
+  users:
+    num_users: 1000
+
+    persona_distribution:
+      ambitious: 0.4
+      cautious: 0.35
+      exploratory: 0.25
+
+    attributes:
+      budget:
+        distribution: beta
+        alpha: 2.0
+        beta: 5.0
+
+      ability:
+        distribution: normal
+        mean: 0.6
+        std: 0.15
+
+  items:
+    num_items: 200
+
+    attributes:
+      prestige:
+        distribution: normal
+        mean: 0.5
+        std: 0.2
+
+      cost:
+        distribution: uniform
+        min: 0.1
+        max: 0.9
+
+      category:
+        values: [research, teaching, balanced]
+        probabilities: [0.4, 0.3, 0.3]

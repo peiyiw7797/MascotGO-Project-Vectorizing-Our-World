@@ -1,0 +1,13 @@
+# ------------------------------------------------------------
+# Global
+# ------------------------------------------------------------
+run:
+  run_id: null              # if null, auto-generate
+  seed: 42                  # global seed (MANDATORY)
+  deterministic: true       # must be true in Phase 1
+
+paths:
+  synthetic_root: data/synthetic
+  multimodal_root: data/multimodal
+  external_data_root: data/external
+  processed_root: data/processed

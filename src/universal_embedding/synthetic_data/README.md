@@ -338,12 +338,12 @@ Rules:
 ### Upstream
 
 * Simulation outputs (Issues #1 and #3)
-* Config files (`configs/*.yaml`)
+* Assembled config (`configs/small.yaml`) built from `configs/checkpoints/*.yaml`
+* Module loader: `universal_embedding.synthetic_data.config_loader.load_multimodal_config`
 
 ### Downstream
 
 * Phase 2 embedding training pipelines
-* `evaluation.distribution`
 
 Downstream code assumes this module is **stable and schema-consistent**.
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 
+from universal_embedding.config import load_config
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run simulation")
@@ -13,7 +15,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    print(f"Simulation stub using config: {args.config}")
+    config_result = load_config(args.config)
+    print(
+        f"Simulation stub using config: {args.config} "
+        f"(merged from {len(config_result.sources)} file(s))"
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+# ------------------------------------------------------------
+# Real College Data Ingestion & Alignment (Issue #4)
+# ------------------------------------------------------------
+college_alignment:
+  enabled: true
+
+  sources:
+    scorecard:
+      path: college_scorecard.csv
+      version: "2023"
+    rankings:
+      path: rankings.csv
+      version: "qs_2024"
+
+  matching:
+    strategy: hybrid         # exact | fuzzy | hybrid
+    fuzzy_threshold: 0.8
+
+  handling:
+    unmatched_policy: keep   # keep | drop | flag

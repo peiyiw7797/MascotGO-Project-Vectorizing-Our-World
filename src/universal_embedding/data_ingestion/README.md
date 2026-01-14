@@ -146,8 +146,9 @@ This module **must be deterministic**.
 Requirements:
 
 * Config-driven file paths
-* No dependence on wall-clock time
-* Stable sorting and ID generation
+* Config assembled via `configs/small.yaml` (includes `configs/checkpoints/*.yaml`)
+* Module loader: `universal_embedding.data_ingestion.loaders.load_ingestion_config`
+* Stable ID generation
 * Version metadata recorded
 
 ---
@@ -161,8 +162,6 @@ Requirements:
 
 ### Downstream consumers
 
-* `synthetic_data.dataset_builder`
-* `evaluation.distribution`
 * Phase 2 embedding training pipelines
 
 Downstream code assumes:

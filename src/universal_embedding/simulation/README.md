@@ -160,7 +160,7 @@ This work is **dynamic and stochastic**:
 
 * Persona definitions from `schemas.py`
 * Users/items from `population.py`
-* Configuration from `configs/*.yaml`
+* Configuration from assembled configs (see `configs/small.yaml` and `configs/checkpoints/*.yaml`)
 
 ### Outputs
 
@@ -181,14 +181,7 @@ Downstream code assumes these schemas are **stable**.
 
 ---
 
-## How to run locally (Phase 1)
-
-Typical entrypoint (via pipelines):
-
-```bash
-python -m universal_embedding.pipelines.run_simulation \
-  --config configs/small.yaml
-```
+## Output location
 
 Outputs will appear under:
 
@@ -208,7 +201,8 @@ data/synthetic/<run_id>/
 
 * No hard-coded parameters
 * All randomness must be seed-controlled
-* Use config files for behavior knobs
+* Use checkpoint config files for behavior knobs
+* Module loader: `universal_embedding.simulation.loaders.load_simulation_config`
 
 ### Determinism
 
